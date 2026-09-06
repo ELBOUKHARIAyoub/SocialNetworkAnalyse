@@ -1,0 +1,10 @@
+# compiled output
+*.o
+*.exe
+*.out
+*.claude
+prog
+
+# editor junk
+.vscode/
+*.swp

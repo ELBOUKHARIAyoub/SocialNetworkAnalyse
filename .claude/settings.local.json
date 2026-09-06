@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(gcc --version 2>&1)",
+      "PowerShell(cl 2>&1)",
+      "PowerShell(clang --version 2>&1)",
+      "PowerShell(g++ --version 2>&1)",
+      "PowerShell(winget search gcc --source winget 2>&1)",
+      "PowerShell(winget search mingw --source winget 2>&1)",
+      "PowerShell(winget install --id BrechtSanders.WinLibs.POSIX.UCRT -e --accept-package-agreements --accept-source-agreements)",
+      "PowerShell(winget install --id BrechtSanders.WinLibs.POSIX.UCRT -e --accept-package-agreements --accept-source-agreements --verbose-logs 2>&1)"
+    ]
+  }
+}
