@@ -54,7 +54,37 @@ int find_user(Graph *g, const char *name){
 printf("the user dosn t exist ");
 return -1;
 }   
-int remove_user(Graph *g,int idx);
+int remove_user(Graph *g,int idx){
+    
+    if (idx < 0 || idx >= g->count) {
+    printf("invalid index\n");
+    return -1;
+}
+if (!g->users[idx].active) {
+    printf("user is not active\n");
+    return 0;
+}
+EdgeNode *cur = g->users[idx].head;
+while (cur != NULL) {
+    unlink_neighbor(&g->users[cur->neighbor], idx);
+    
+    cur = cur->next;
+}
+g->users[idx].active = 0;
+g->users[idx].name[0] = '\0';
+cur = g->users[idx].head;
+while (cur != NULL) {
+    EdgeNode *next = cur->next;   /* save before freeing */
+    free(cur);
+    cur = next;
+}
+g->users[idx].head = NULL;
+for (int i = 0; i < g->count; i++) {
+    g->matrix[idx][i] = 0;
+    g->matrix[i][idx] = 0;
+}
+return 1;
+}
 int add_friendship(Graph *g, int idx1, int idx2){
 if(idx1<0 || idx2<0 || idx1>=g->count || idx2>=g->count){
     printf("invalid index\n");
@@ -141,4 +171,16 @@ void display(Graph *g){
         }
     }
 }
-void free_graph(Graph *g);
+void free_graph(Graph *g){
+
+    for (int i = 0; i < g->count; i++) {
+        EdgeNode *cur = g->users[i].head;
+        while (cur != NULL) {
+            EdgeNode *next = cur->next;
+            free(cur);
+            cur = next;
+        }
+        g->users[i].head = NULL;
+    }
+    g->count = 0;
+}
