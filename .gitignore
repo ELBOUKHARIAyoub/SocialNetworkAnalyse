@@ -4,6 +4,7 @@
 *.out
 *.claude
 prog
+change.txt
 
 # editor junk
 .vscode/
