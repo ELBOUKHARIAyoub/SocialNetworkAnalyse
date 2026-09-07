@@ -91,7 +91,43 @@ g->matrix[idx2][idx1] = 1;
 return 1;
 }
 
-int remove_friendship(Graph *g, int idx1, int idx2);
+static void unlink_neighbor(User *u, int target){
+  EdgeNode *curr = u->head;
+  EdgeNode *prev = NULL; 
+  while (curr != NULL) {
+    if (curr->neighbor == target) {
+        if (prev == NULL) {
+            u->head = curr->next;
+        } else {
+            prev->next = curr->next;
+        }
+        free(curr);
+        return;
+    }
+    prev = curr;
+    curr = curr->next;
+}
+}
+int remove_friendship(Graph *g, int idx1, int idx2){
+
+    if(idx1<0 || idx2<0 || idx1>=g->count || idx2>=g->count){
+    printf("invalid index\n");
+    return -1;
+}
+if(!g->users[idx1].active || !g->users[idx2].active){
+    printf("one or both users are not active\n");
+    return -1;
+}
+if (g->matrix[idx1][idx2] == 0) {
+    printf("they are not friends\n");
+    return 0;
+}
+unlink_neighbor(&g->users[idx1], idx2);
+unlink_neighbor(&g->users[idx2], idx1);
+g->matrix[idx1][idx2] = 0;
+g->matrix[idx2][idx1] = 0;
+return 1;
+}
 void display(Graph *g){
     for(int i=0;i<g->count;i++){
          if (!g->users[i].active) continue;

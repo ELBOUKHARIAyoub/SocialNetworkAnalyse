@@ -17,6 +17,11 @@ int main(void)
     add_friendship(&g, a, o);
 
     display(&g);
+    printf("--- removing Ayoub-Ismail ---\n");
+remove_friendship(&g, a, i);
+display(&g);
+
+remove_friendship(&g, a, i);   /* should say "they are not friends" */
 
     return 0;
 }

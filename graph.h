@@ -33,4 +33,5 @@ int remove_friendship(Graph *g, int idx1, int idx2);
 void display(Graph *g);
 void free_graph(Graph *g);
 
+
 #endif
