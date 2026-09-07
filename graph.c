@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void unlink_neighbor(User *u, int target);
+
 void graph_init(Graph *g)
 {
     g->count = 0;

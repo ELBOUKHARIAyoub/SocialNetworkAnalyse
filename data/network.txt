@@ -1,0 +1,7 @@
+#USERS
+0 Ayoub
+1 Ismail
+2 Omar
+#EDGES
+0 1
+0 2
