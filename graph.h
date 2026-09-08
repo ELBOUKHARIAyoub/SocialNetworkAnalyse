@@ -1,7 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#define MAX_USERS 100
+#define MAX_USERS 5000
 #define MAX_NAME 32
 
 

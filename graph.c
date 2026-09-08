@@ -53,7 +53,7 @@ int find_user(Graph *g, const char *name){
 }
 
     } 
-printf("the user dosn t exist ");
+
 return -1;
 }   
 int remove_user(Graph *g,int idx){

@@ -5,8 +5,11 @@
 
 int main(void)
 {
-    Graph g;
-    graph_init(&g);
-    load_network(&g, "data/network.txt");
-    return 0;
+    static Graph g;
+graph_init(&g);
+
+
+load_network(&g, "data/facebook_named.txt");
+printf("count = %d\n", g.count);
+display(&g);
 }

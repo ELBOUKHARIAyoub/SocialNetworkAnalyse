@@ -38,7 +38,7 @@ while(fgets(buffer, sizeof(buffer), f)){
         
     }
     
-     printf("%s",buffer);
+     // printf("%s",buffer);
 }
 fclose(f);
 return 1;
@@ -69,4 +69,22 @@ int save_network(Graph *g, const char *filename)
     fclose(f);
     return 1;
 }
-int load_edge_list(Graph *g,const char *filename);
+int load_edge_list(Graph *g,const char *filename){
+    
+    char buffer[256];
+    FILE *f = fopen(filename, "r");
+    if (f==NULL) return 0;
+    while(fgets(buffer, sizeof(buffer), f)){
+        buffer[strcspn(buffer, "\r\n")] = '\0';
+        if (buffer[0] == '\0' || buffer[0] == '\n' )
+            continue;
+        int idx1, idx2;
+        if (sscanf(buffer, "%d %d", &idx1, &idx2) > 0) {
+            add_friendship(g, idx1, idx2);
+        }
+    }
+    fclose(f);
+    return 1;
+
+
+}
