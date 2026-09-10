@@ -33,18 +33,6 @@ static int read_line(char *buf, size_t size, const char *prompt)
     return 0;
 }
 
-/* Read one integer, re-prompting on bad input.
- * Returns 0 on success (value written to *out), -1 on EOF. */
-static int read_int(const char *prompt, int *out)
-{
-    char buf[64];
-    while (1) {
-        if (read_line(buf, sizeof(buf), prompt) < 0) return -1;
-        if (sscanf(buf, "%d", out) == 1) return 0;
-        printf(COLOR_RED "Invalid number, please try again.\n" COLOR_RESET);
-    }
-}
-
 static void press_enter(void)
 {
     printf(COLOR_YELLOW "\nPress Enter to continue..." COLOR_RESET);
@@ -115,6 +103,23 @@ static void do_load_network(Graph *g)
 }
 
 
+static void do_save_network(Graph *g)
+{
+    char filename[256];
+    if (read_line(filename, sizeof(filename), "Enter filename to save to: ") < 0) return;
+    if (filename[0] == '\0') {
+        printf(COLOR_RED "\nNo filename given.\n" COLOR_RESET);
+        return;
+    }
+
+    if (save_network(g, filename)) {
+        printf(COLOR_GREEN "\nNetwork saved to '%s' -- %d users.\n" COLOR_RESET,
+               filename, g->count);
+    } else {
+        printf(COLOR_RED "\nCould not write to '%s'.\n" COLOR_RESET, filename);
+    }
+}
+
 static void do_display_network(Graph *g)
 {
     if (g->count == 0) {
@@ -137,47 +142,114 @@ static void do_add_user(Graph *g)
     }
 }
 
+/* Reads a name and resolves it to an index. Returns -1 if not found or on EOF. */
+static int read_user_index(Graph *g, const char *prompt)
+{
+    char name[MAX_NAME];
+    if (read_line(name, sizeof(name), prompt) < 0) return -1;
+
+    int idx = find_user(g, name);
+    if (idx < 0) {
+        printf(COLOR_RED "\nUser '%s' not found.\n" COLOR_RESET, name);
+    }
+    return idx;
+}
+
 static void do_add_friendship(Graph *g)
 {
-    int idx1, idx2;
-    if (read_int("Enter first user index: ", &idx1) < 0) return;
-    if (read_int("Enter second user index: ", &idx2) < 0) return;
+    int idx1 = read_user_index(g, "Enter first user name: ");
+    if (idx1 < 0) return;
+    int idx2 = read_user_index(g, "Enter second user name: ");
+    if (idx2 < 0) return;
 
     if (add_friendship(g, idx1, idx2) > 0) {
-        printf(COLOR_GREEN "\nFriendship added between %d and %d.\n" COLOR_RESET, idx1, idx2);
-    } else {
-        printf(COLOR_RED "\nCould not add friendship between %d and %d.\n" COLOR_RESET, idx1, idx2);
+        printf(COLOR_GREEN "\nFriendship added between %s and %s.\n" COLOR_RESET,
+               g->users[idx1].name, g->users[idx2].name);
     }
 }
 
 static void do_remove_friendship(Graph *g)
 {
-    int idx1, idx2;
-    if (read_int("Enter first user index: ", &idx1) < 0) return;
-    if (read_int("Enter second user index: ", &idx2) < 0) return;
+    int idx1 = read_user_index(g, "Enter first user name: ");
+    if (idx1 < 0) return;
+    int idx2 = read_user_index(g, "Enter second user name: ");
+    if (idx2 < 0) return;
 
     if (remove_friendship(g, idx1, idx2) > 0) {
-        printf(COLOR_GREEN "\nFriendship removed between %d and %d.\n" COLOR_RESET, idx1, idx2);
-    } else {
-        printf(COLOR_RED "\nCould not remove friendship between %d and %d.\n" COLOR_RESET, idx1, idx2);
+        printf(COLOR_GREEN "\nFriendship removed between %s and %s.\n" COLOR_RESET,
+               g->users[idx1].name, g->users[idx2].name);
     }
 }
 
 static void do_remove_user(Graph *g)
 {
-    int idx;
-    if (read_int("Enter user index to remove: ", &idx) < 0) return;
+    char name[MAX_NAME];
+    if (read_line(name, sizeof(name), "Enter user name to remove: ") < 0) return;
+
+    int idx = find_user(g, name);
+    if (idx < 0) {
+        printf(COLOR_RED "\nUser '%s' not found.\n" COLOR_RESET, name);
+        return;
+    }
 
     if (remove_user(g, idx) > 0) {
-        printf(COLOR_GREEN "\nUser %d removed.\n" COLOR_RESET, idx);
-    } else {
-        printf(COLOR_RED "\nCould not remove user %d.\n" COLOR_RESET, idx);
+        printf(COLOR_GREEN "\nUser '%s' removed.\n" COLOR_RESET, name);
     }
 }
 
-static void not_implemented(const char *feature)
+static void do_shortest_path(Graph *g)
 {
-    printf(COLOR_YELLOW "\n'%s' is not implemented yet.\n" COLOR_RESET, feature);
+    char name1[MAX_NAME], name2[MAX_NAME];
+    if (read_line(name1, sizeof(name1), "Enter first user name: ") < 0) return;
+    if (read_line(name2, sizeof(name2), "Enter second user name: ") < 0) return;
+
+    int src = find_user(g, name1);
+    int dst = find_user(g, name2);
+    if (src < 0 || dst < 0) {
+        printf(COLOR_RED "\nOne or both users not found.\n" COLOR_RESET);
+        return;
+    }
+
+    int path[MAX_USERS];
+    int hops = shortest_path(g, src, dst, path);
+
+    if (hops >= 0) {
+        printf(COLOR_GREEN "\n");
+        for (int i = 0; i <= hops; i++) {
+            printf("%s ", g->users[path[i]].name);
+        }
+        printf("(%d hops)\n" COLOR_RESET, hops);
+    }
+    /* shortest_path already prints its own error on failure */
+}
+
+static void do_recommend(Graph *g)
+{
+    char name[MAX_NAME];
+    if (read_line(name, sizeof(name), "Enter user name: ") < 0) return;
+
+    int idx = find_user(g, name);
+    if (idx < 0) {
+        printf(COLOR_RED "\nUser '%s' not found.\n" COLOR_RESET, name);
+        return;
+    }
+
+    int result[5];
+    int n = recommend_friends(g, idx, result, 5);
+    if (n < 0) return; /* recommend_friends already printed the error */
+
+    printf(COLOR_GREEN "\n%d recommendation(s) for %s:\n" COLOR_RESET, n, g->users[idx].name);
+    for (int i = 0; i < n; i++) {
+        printf("  %s\n", g->users[result[i]].name);
+    }
+}
+
+static void do_count_communities(Graph *g)
+{
+    int n = count_communities(g);
+    if (n >= 0) {
+        printf(COLOR_GREEN "\nNumber of communities: %d\n" COLOR_RESET, n);
+    }
 }
 
 int main(void)
@@ -191,7 +263,7 @@ int main(void)
 
     int running = 1;
     while (running) {
-        printf(CLEAR_SCREEN);
+        /* printf(CLEAR_SCREEN); */   /* uncomment for a clean demo screen */
         print_banner();
         print_menu(g.count);
 
@@ -204,10 +276,10 @@ int main(void)
             case 4:  do_add_friendship(&g); break;
             case 5:  do_remove_friendship(&g); break;
             case 6:  do_remove_user(&g); break;
-            case 7:  not_implemented("Shortest path"); break;
-            case 8:  not_implemented("Recommend friends"); break;
-            case 9:  not_implemented("Count communities"); break;
-            case 10: not_implemented("Save network"); break;
+            case 7:  do_shortest_path(&g); break;
+            case 8:  do_recommend(&g); break;
+            case 9:  do_count_communities(&g); break;
+            case 10: do_save_network(&g); break;
             case 0:
                 printf(COLOR_CYAN "\nGoodbye!\n" COLOR_RESET);
                 running = 0;

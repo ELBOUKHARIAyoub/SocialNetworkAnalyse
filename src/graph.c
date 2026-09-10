@@ -98,7 +98,7 @@ if(idx1<0 || idx2<0 || idx1>=g->count || idx2>=g->count){
     printf("users are not active\n");
     return -1;
 }else if (g->matrix[idx1][idx2] == 1) {
-    printf("already friends\n");
+    //printf("already friends\n");
     return 0;
 }
 EdgeNode *node1 = malloc(sizeof(EdgeNode));
@@ -151,7 +151,7 @@ if(!g->users[idx1].active || !g->users[idx2].active){
     return -1;
 }
 if (g->matrix[idx1][idx2] == 0) {
-    printf("they are not friends\n");
+   // printf("they are not friends\n");
     return 0;
 }
 unlink_neighbor(&g->users[idx1], idx2);

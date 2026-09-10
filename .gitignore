@@ -6,6 +6,16 @@
 prog
 change.txt
 
+# generated data / results (regenerate with `make data` / the C program / the notebook)
+data/facebook_combined.txt
+output/*.csv
+figures/*.png
+!output/.gitkeep
+!figures/.gitkeep
+
+# notebook checkpoints
+.ipynb_checkpoints/
+
 # editor junk
 .vscode/
 *.swp
