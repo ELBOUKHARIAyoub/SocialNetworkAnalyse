@@ -79,3 +79,54 @@ int shortest_path(Graph *g, int src, int dst, int *path){
     free(queue);
     return hops;
 }
+int recommend_friends(Graph *g, int idx, int *result, int max_results){
+    //firt lets guards that index is valid and user active
+    if(idx<0 || idx>=g->count){
+        printf("invalid index\n");
+        return -1;
+    }
+    if(!g->users[idx].active){
+        printf("user is not active\n");
+        return -1;
+    }
+
+    int *counts = calloc(g->count, sizeof(int));
+    if(counts == NULL){
+        printf("out of memory\n");
+        return -1;
+    }
+
+    EdgeNode *f = g->users[idx].head;
+    while (f != NULL) {
+
+        EdgeNode *c = g->users[f->neighbor].head;   /* inner: their friends */
+        while (c != NULL) {
+            int cand = c->neighbor;
+            if(cand != idx && g->matrix[idx][cand] != 1){
+                counts[cand]++;
+            }
+            c = c->next;
+        }
+
+        f = f->next;
+    }
+
+    // now pick the top max_results by count
+    int filled = 0;
+    for(int k = 0; k < max_results; k++){
+        int best = -1;
+        for(int c = 0; c < g->count; c++){
+            if(best == -1 || counts[c] > counts[best]){
+                best = c;
+            }
+        }
+        if(best == -1 || counts[best] == 0){
+            break;
+        }
+        result[filled++] = best;
+        counts[best] = 0;
+    }
+
+    free(counts);
+    return filled;
+}

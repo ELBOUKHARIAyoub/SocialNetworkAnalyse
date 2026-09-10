@@ -4,5 +4,5 @@
 
 
 int shortest_path(Graph *g, int src, int dst, int *path);
-
+int recommend_friends(Graph *g, int idx, int *result, int max_results);
 #endif
