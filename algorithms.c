@@ -130,3 +130,47 @@ int recommend_friends(Graph *g, int idx, int *result, int max_results){
     free(counts);
     return filled;
 }
+
+int count_communities(Graph *g){
+
+    int *visited = calloc(g->count, sizeof(int));
+    int *queue = malloc(g->count * sizeof(int));
+    if(visited == NULL || queue == NULL){
+        printf("out of memory\n");
+        free(visited);
+        free(queue);
+        return -1;
+    }
+
+    int components = 0;
+
+    for(int i = 0; i < g->count; i++){
+        if(!g->users[i].active) continue;
+        if(visited[i]) continue;
+
+        components++;
+
+        // BFS from i, marking everything reachable as visited
+        int head = 0, tail = 0;
+        visited[i] = 1;
+        queue[tail++] = i;
+
+        while(head < tail){
+            int cur = queue[head++];
+
+            EdgeNode *curr = g->users[cur].head;
+            while(curr != NULL){
+                int n = curr->neighbor;
+                if(!visited[n]){
+                    visited[n] = 1;
+                    queue[tail++] = n;
+                }
+                curr = curr->next;
+            }
+        }
+    }
+
+    free(visited);
+    free(queue);
+    return components;
+}
